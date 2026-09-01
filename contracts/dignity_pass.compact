@@ -1,0 +1,167 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+/**
+ * Dignity Pass — one-time private aid coupon.
+ *
+ * Agency creates coupon commitment off-chain:
+ *   commitment = persistentCommit<Vector<2, Bytes<32>>>(
+ *     [couponSecret, couponNonce], campaignId)
+ *
+ * Beneficiary keeps couponSecret and couponNonce private. During redeem, the
+ * circuit proves commitment membership and writes only campaign-scoped
+ * nullifier to public ledger state.
+ */
+
+export enum CampaignState {
+  OPEN,
+  PAUSED,
+  CLOSED
+}
+
+// Public configuration. agencyKey is a hash, never agency secret.
+export sealed ledger agencyKey: Bytes<32>;
+export sealed ledger campaignId: Bytes<32>;
+export sealed ledger expiresAt: Uint<64>;
+export sealed ledger maxCoupons: Uint<64>;
+
+export ledger state: CampaignState;
+export ledger issuedCoupons: Set<Bytes<32>>;
+export ledger revokedCoupons: Set<Bytes<32>>;
+export ledger redeemedNullifiers: Set<Bytes<32>>;
+export ledger issuedCount: Counter;
+
+// Implemented by DApp wallet. Values never enter public ledger state.
+witness agencySecret(): Bytes<32>;
+witness couponSecret(): Bytes<32>;
+witness couponNonce(): Bytes<32>;
+
+constructor(
+  agencyKeyHash: Bytes<32>,
+  campaign: Bytes<32>,
+  expiry: Uint<64>,
+  couponLimit: Uint<64>
+) {
+  assert(couponLimit > 0, "Coupon limit must be greater than zero");
+  assert(disclose(expiry) == 0 || kernel.blockTimeLessThan(disclose(expiry)), "Campaign already expired");
+
+  agencyKey = disclose(agencyKeyHash);
+  campaignId = disclose(campaign);
+  expiresAt = disclose(expiry);
+  maxCoupons = disclose(couponLimit);
+  state = CampaignState.OPEN;
+}
+
+/** Agency issues one fresh coupon commitment. */
+export circuit issueCoupon(commitment: Bytes<32>): [] {
+  assert(isAgency(), "Only agency can issue coupons");
+  assert(state == CampaignState.OPEN, "Campaign is not open");
+  assert(!hasExpired(), "Campaign has expired");
+  assert(issuedCount.lessThan(maxCoupons), "Coupon limit reached");
+  assert(!issuedCoupons.member(disclose(commitment)), "Coupon commitment already issued");
+
+  issuedCoupons.insert(disclose(commitment));
+  issuedCount.increment(1);
+}
+
+/** Agency revokes coupon commitment; redeemed nullifier remains blocking. */
+export circuit revokeCoupon(commitment: Bytes<32>): [] {
+  assert(isAgency(), "Only agency can revoke coupons");
+  assert(state != CampaignState.CLOSED, "Campaign is closed");
+  assert(issuedCoupons.member(disclose(commitment)), "Coupon commitment not found");
+  assert(!revokedCoupons.member(disclose(commitment)), "Coupon already revoked");
+
+  revokedCoupons.insert(disclose(commitment));
+}
+
+/** Pause issuance and redemption without changing issued or redeemed state. */
+export circuit pause(): [] {
+  assert(isAgency(), "Only agency can pause campaign");
+  assert(state == CampaignState.OPEN, "Campaign is not open");
+  state = CampaignState.PAUSED;
+}
+
+/** Resume paused campaign before expiry. */
+export circuit resume(): [] {
+  assert(isAgency(), "Only agency can resume campaign");
+  assert(state == CampaignState.PAUSED, "Campaign is not paused");
+  assert(!hasExpired(), "Campaign has expired");
+  state = CampaignState.OPEN;
+}
+
+/** Permanently stop all campaign operations. */
+export circuit closeCampaign(): [] {
+  assert(isAgency(), "Only agency can close campaign");
+  assert(state != CampaignState.CLOSED, "Campaign already closed");
+  state = CampaignState.CLOSED;
+}
+
+/**
+ * Shop/agency verification and redemption.
+ *
+ * No identity, address, eligibility record, secret, or nonce is disclosed.
+ * The only persistent output is nullifier, which is unlinkable across
+ * campaigns because campaignId is included in its hash.
+ */
+export circuit redeem(): [] {
+  assert(state == CampaignState.OPEN, "Campaign is not open");
+  assert(!hasExpired(), "Campaign has expired");
+
+  const commitment = couponCommitment(couponSecret(), couponNonce());
+  assert(issuedCoupons.member(commitment), "Invalid coupon");
+  assert(!revokedCoupons.member(commitment), "Coupon revoked");
+
+  const nullifier = couponNullifier(couponSecret(), couponNonce());
+  assert(!redeemedNullifiers.member(disclose(nullifier)), "Coupon already redeemed");
+
+  redeemedNullifiers.insert(disclose(nullifier));
+}
+
+/** Read-only check for a supplied commitment. Reveals no beneficiary data. */
+export circuit isIssued(commitment: Bytes<32>): Boolean {
+  return issuedCoupons.member(disclose(commitment)) && !revokedCoupons.member(disclose(commitment));
+}
+
+/** Read-only check for a supplied nullifier. */
+export circuit isRedeemed(nullifier: Bytes<32>): Boolean {
+  return redeemedNullifiers.member(disclose(nullifier));
+}
+
+/** Return campaign expiry; zero means no expiry. */
+export circuit campaignExpiry(): Uint<64> {
+  return expiresAt;
+}
+
+/** Return number of issued coupons; does not expose coupon owners. */
+export circuit totalIssued(): Uint<64> {
+  return issuedCount.read();
+}
+
+circuit isAgency(): Boolean {
+  return agencyKey == agencyPublicKey(agencySecret());
+}
+
+circuit hasExpired(): Boolean {
+  return expiresAt != 0 && kernel.blockTimeGreaterThan(expiresAt);
+}
+
+circuit agencyPublicKey(secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "dignity-pass:agency:"), secret]
+  );
+}
+
+circuit couponCommitment(secret: Bytes<32>, nonce: Bytes<32>): Bytes<32> {
+  return persistentCommit<Vector<2, Bytes<32>>>(
+    [secret, nonce], campaignId as Bytes<32>
+  );
+}
+
+circuit couponNullifier(secret: Bytes<32>, nonce: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([
+    pad(32, "dignity-pass:nullifier:"),
+    campaignId,
+    persistentHash<Vector<2, Bytes<32>>>([secret, nonce])
+  ]);
+}

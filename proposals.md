@@ -27,11 +27,17 @@ Selective disclosure is core product behavior:
 - Nullifier prevents double redemption without exposing coupon secret.
 - Public campaign state supports audit without publishing beneficiary data.
 
+### Shared deployment
+
+Preprod: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`.
+
+Deploy once, reconnect on each session, and send all contract transactions to this address. Dashboard transaction integration remains roadmap work.
+
 ### MVP scope
 
 - Next.js agency dashboard.
 - 1AM connection on Midnight Preprod.
-- Wallet-backed contract deployment flow.
+- Wallet connection to the existing shared Preprod contract.
 - Compact contract for issue, revoke, pause, resume, close, redeem, and read-only checks.
 - Checked-in proving/verifying assets.
 - CI checks for lint, typecheck, build, and Compact compilation.
@@ -40,8 +46,8 @@ Selective disclosure is core product behavior:
 ### Acceptance criteria
 
 1. Agency connects 1AM on `preprod`.
-2. Agency deploys campaign with valid constructor values.
-3. Deployment returns indexed contract address.
+2. Agency connects to the existing Preprod campaign.
+3. Connection verifies the configured contract through the indexer.
 4. Invalid agency cannot call agency-only circuits.
 5. Revoked or expired coupon cannot redeem.
 6. Same coupon cannot redeem twice.
@@ -61,7 +67,7 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 
 #### Phase 1 — Level 4 MVP
 
-- Complete Preprod deployment.
+- Reuse the deployed Preprod contract for all circuit calls.
 - Connect issue/redeem UI to generated contract API.
 - Replace sample metrics with indexed state.
 - Publish hosted app, contract address, CI badge, demo, and X profile.
@@ -97,7 +103,7 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 
 - [ ] Public GitHub repository.
 - [ ] Live Midnight Preprod app.
-- [ ] Indexed contract address.
+- [x] Contract address supplied by owner: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480` (verify through the app).
 - [ ] README with setup and usage.
 - [ ] CI workflow with passing run.
 - [ ] Product X profile linked in README.

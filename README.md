@@ -8,7 +8,7 @@ Built for **New Moon to Full: Monthly Moonshots on Midnight — Level 4: Waxing 
 
 Dignity Pass gives aid agencies a private coupon workflow:
 
-1. Agency deploys a campaign contract.
+1. Agency connects to the shared, already deployed Preprod campaign.
 2. Agency issues a commitment for each coupon.
 3. Recipient keeps coupon secret and nonce in wallet/private state.
 4. Recipient redeems once through a zero-knowledge proof.
@@ -23,8 +23,8 @@ Replace marked placeholders before submission.
 | Resource | Link |
 | --- | --- |
 | Live Preprod app | **TODO: add deployed Vercel/host URL** |
-| Deploy page | [`/deploy`](./app/deploy/page.tsx) — available at `<app-url>/deploy` |
-| Contract address | **TODO: paste indexed Midnight Preprod address** |
+| Contract connection page | [`/deploy`](./app/deploy/page.tsx) — available at `<app-url>/deploy` |
+| Contract address | `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480` |
 | GitHub repository | **TODO: add public repository URL** |
 | Product X profile | **TODO: add product X profile URL** |
 | Demo video | **TODO: add 1-minute MVP demo URL** |
@@ -36,9 +36,9 @@ Replace marked placeholders before submission.
 
 | Requirement | Status | Evidence / action |
 | --- | --- | --- |
-| Working MVP live on Preprod | **TODO** | Add live app URL above; deploy via `/deploy` |
+| Working MVP live on Preprod | **TODO** | Add live app URL above; connect via `/deploy` |
 | Public GitHub repository | **TODO** | Add repository URL above |
-| Contract address | **TODO** | Paste indexed Preprod address above |
+| Contract address | Provided | Deployment reported by owner; address above |
 | README with setup and usage | Done | This file |
 | Contract/privacy explanation | Done | [Privacy model](#privacy-model), [Contract](#contract) |
 | CI/CD workflow | Done | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) |
@@ -56,7 +56,7 @@ Repository covers Level 4 implementation requirements:
 - Browser wallet integration through 1AM.
 - Midnight Preprod network configuration.
 - Browser-side proving assets under [`public/zk/dignity-pass`](./public/zk/dignity-pass).
-- Deploy flow with wallet signing, proving, balancing, submission, and indexer polling.
+- Existing-contract connection with wallet providers and indexer verification.
 - Technical documentation, user-facing usage, contract reference, privacy model, architecture, and proposal.
 - CI workflow for lint, TypeScript, production build, and Compact compilation.
 
@@ -66,7 +66,7 @@ Repository covers Level 4 implementation requirements:
 - npm
 - 1AM browser extension, installed and unlocked
 - Midnight Preprod selected in 1AM
-- Preprod funds sufficient for deployment and transactions
+- Preprod funds sufficient for transactions
 - Compact CLI for local contract compilation; browser app uses checked-in generated assets
 
 Do not commit wallet secrets, agency secrets, coupon secrets, private keys, or `.env` files.
@@ -93,19 +93,23 @@ npm run verify
 
 ## How to use
 
-### Deploy campaign on Preprod
+### Connect to the existing Preprod contract
 
-1. Install and unlock [1AM](https://1am.xyz).
-2. Switch 1AM to Midnight `preprod`.
-3. Start app with `npm run dev`, or open hosted app.
-4. Open `/deploy`.
-5. Select **Connect 1AM wallet**.
-6. Confirm wallet connection.
-7. Select **Deploy through 1AM** and approve wallet requests.
-8. Wait for Preprod indexer confirmation.
-9. Copy returned contract address and publish it in [Links](#links).
+Contract deployed once; every session and contract transaction must reuse:
 
-Deployment uses wallet-provided proving, balancing, signing, and submission. No server-side funded deployer wallet or local proof server required.
+```text
+5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480
+```
+
+Runtime source of truth: [`lib/config.ts`](./lib/config.ts). The connection helper returns a contract instance whose `callTx` methods target this address. It does not accept an alternate address or deploy another contract.
+
+1. Unlock 1AM and select Midnight `preprod`.
+2. Start the app or open its hosted URL.
+3. Open `/deploy` (retained as the contract connection route).
+4. Select **Connect to existing contract** and approve wallet connection.
+5. Wait for the existing contract to be verified through the indexer.
+
+Connection itself does not submit a transaction. Future circuit calls use wallet-provided proving, balancing, and submission.
 
 ### Use dashboard
 
@@ -113,7 +117,7 @@ Deployment uses wallet-provided proving, balancing, signing, and submission. No 
 - **Issue passes:** enter internal reference label. Label is agency UI only; never use name, address, or eligibility detail. Select **Generate private pass**.
 - **Verify redemption:** run verification demo. Production wiring should submit `redeem()` with recipient private witness state and read resulting ledger state.
 
-Dashboard includes presentation/demo interactions. Contract deployment is wired to Midnight Preprod; production issue and redemption transaction controls remain next integration work.
+Dashboard includes presentation/demo interactions. Existing-contract connection is wired to Midnight Preprod; production issue and redemption transaction controls remain next integration work.
 
 ## Privacy model
 
@@ -169,14 +173,16 @@ User browser
 | Area | Location | Responsibility |
 | --- | --- | --- |
 | Dashboard | [`app/page.tsx`](./app/page.tsx) | Overview, issue, verify UI |
-| Deployment UI | [`app/deploy/page.tsx`](./app/deploy/page.tsx) | Connect 1AM, deploy, poll indexer |
+| Deployment UI | [`app/deploy/page.tsx`](./app/deploy/page.tsx) | Connect 1AM and verify existing contract |
 | Midnight session | [`lib/midnight.ts`](./lib/midnight.ts) | Network, wallet/provider adapters, state polling |
-| Contract integration | [`lib/dignity-pass.ts`](./lib/dignity-pass.ts) | Compile contract, build and submit deployment |
+| Contract integration | [`lib/dignity-pass.ts`](./lib/dignity-pass.ts) | Bind compiled contract and circuit calls to shared address |
 | Compact source | [`contracts/dignity_pass.compact`](./contracts/dignity_pass.compact) | Privacy-critical circuits and ledger |
 | ZK assets | [`public/zk/dignity-pass`](./public/zk/dignity-pass) | Browser prover/verifier assets |
 | CI | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | Lint, typecheck, build, Compact compile |
 
 ## Contract
+
+Preprod address: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`. This deployment is reused for every contract operation.
 
 Source: [`contracts/dignity_pass.compact`](./contracts/dignity_pass.compact).
 

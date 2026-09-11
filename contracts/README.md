@@ -2,6 +2,12 @@
 
 `dignity_pass.compact` is a privacy-preserving, one-time aid coupon contract for Midnight Network.
 
+## Shared Preprod deployment
+
+`5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`
+
+Already deployed. Use `connectDignityPass()` in `lib/dignity-pass.ts` to connect; all returned `callTx` operations target this address. Runtime configuration lives in `lib/config.ts`. Do not redeploy during normal use.
+
 ## Privacy model
 
 - Agency issues `persistentCommit(couponSecret, couponNonce, campaignId)`.
@@ -14,7 +20,7 @@ Nullifier is public by design: it prevents replay. It is domain-separated by `ca
 
 ## Operations
 
-1. Deploy with `agencyKeyHash = persistentHash([pad(32, "dignity-pass:agency:"), agencySecret])`, campaign ID, expiry Unix timestamp (`0` = no expiry), and coupon limit.
+1. Connect to the shared address. Agency operations require the original secret matching its sealed `agencyKey`; connecting a wallet does not grant agency authority.
 2. Agency generates random 32-byte `couponSecret` and `couponNonce` per beneficiary. Compute commitment and call `issueCoupon(commitment)`.
 3. Give beneficiary only private coupon material. Never place secret, nonce, name, or eligibility evidence in public transaction arguments.
 4. Shop calls `redeem()` through beneficiary wallet. Proof succeeds only for issued, unexpired, unredeemed coupon.

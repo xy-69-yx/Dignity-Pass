@@ -1,0 +1,106 @@
+# Product Proposals
+
+## Selected proposal: Dignity Pass — private aid coupon redemption
+
+### Problem
+
+Aid programs need prove support issued and redeemed correctly. Traditional coupons expose names, household IDs, eligibility documents, or reusable voucher codes. This creates stigma, safety risk, duplicate claims, and unnecessary data retention.
+
+### Users
+
+- Relief agency: creates campaign, issues coupons, pauses/revokes coupons.
+- Beneficiary: receives private coupon secret and redeems once.
+- Partner shop: verifies eligibility and unused status without seeing identity.
+- Auditor: sees campaign activity, not beneficiary records.
+
+### Solution
+
+Dignity Pass represents each coupon as commitment to private `couponSecret` and `couponNonce`, scoped to one campaign. Recipient calls `redeem()` with private witness values. Contract verifies commitment membership, revocation, expiry, campaign state, and nullifier freshness. Ledger stores only campaign-scoped nullifier after redemption.
+
+### Midnight privacy fit
+
+Selective disclosure is core product behavior:
+
+- Agency secret proves authorization without disclosure.
+- Coupon secret and nonce prove possession without disclosure.
+- Commitment proves issuance without identifying recipient.
+- Nullifier prevents double redemption without exposing coupon secret.
+- Public campaign state supports audit without publishing beneficiary data.
+
+### MVP scope
+
+- Next.js agency dashboard.
+- 1AM connection on Midnight Preprod.
+- Wallet-backed contract deployment flow.
+- Compact contract for issue, revoke, pause, resume, close, redeem, and read-only checks.
+- Checked-in proving/verifying assets.
+- CI checks for lint, typecheck, build, and Compact compilation.
+- Setup, usage, privacy, architecture, contract, and proposal docs.
+
+### Acceptance criteria
+
+1. Agency connects 1AM on `preprod`.
+2. Agency deploys campaign with valid constructor values.
+3. Deployment returns indexed contract address.
+4. Invalid agency cannot call agency-only circuits.
+5. Revoked or expired coupon cannot redeem.
+6. Same coupon cannot redeem twice.
+7. Public ledger contains no beneficiary identity, secret, nonce, or eligibility record.
+8. CI passes on every pull request and push to `main`.
+9. Hosted MVP, contract address, demo video, and product X profile linked from README.
+
+### Threat model
+
+Protected: beneficiary identity, coupon secret, nonce, eligibility details, agency secret.
+
+Visible: campaign configuration, commitment/nullifier values, aggregate counts, transaction timing, contract metadata.
+
+Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, malicious 1AM provider, personal data copied into public labels, and legal compliance for real aid programs.
+
+### Roadmap
+
+#### Phase 1 — Level 4 MVP
+
+- Complete Preprod deployment.
+- Connect issue/redeem UI to generated contract API.
+- Replace sample metrics with indexed state.
+- Publish hosted app, contract address, CI badge, demo, and X profile.
+
+#### Phase 2 — production hardening
+
+- Encrypted private-state backup and recovery.
+- Contract integration tests and browser end-to-end tests.
+- Agency key rotation and campaign recovery policy.
+- Role separation for agency issuer and shop verifier.
+- Accessibility, localization, mobile wallet UX.
+
+#### Phase 3 — ecosystem
+
+- Multi-campaign agency workspace.
+- Partner-shop onboarding and scoped verifier permissions.
+- Aggregate impact reports with privacy-preserving statistics.
+- Independent security review and operational privacy audit.
+
+## Alternative ideas evaluated
+
+| Idea | Fit | Decision |
+| --- | --- | --- |
+| Private voting | Strong privacy fit | Not selected; aid access has clearer current scope |
+| Age / eligibility gate | Strong proof fit | Future threshold-eligibility module |
+| Private allowlist access | Strong fit | Coupon commitment pattern can support it |
+| Confidential credentials | Strong fit | Future credential issuer integration |
+| Sealed-bid auction | Strong fit | Different user and economic model |
+| Private payroll / splits | Strong fit | Future disbursement product |
+| Anonymous feedback / survey | Strong fit | Future impact measurement module |
+
+## Level 4 evidence checklist
+
+- [ ] Public GitHub repository.
+- [ ] Live Midnight Preprod app.
+- [ ] Indexed contract address.
+- [ ] README with setup and usage.
+- [ ] CI workflow with passing run.
+- [ ] Product X profile linked in README.
+- [ ] One-minute MVP demo video.
+- [ ] Minimum 15 meaningful commits.
+- [ ] Proposal submitted for review.

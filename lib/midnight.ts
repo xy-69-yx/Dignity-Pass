@@ -16,7 +16,8 @@ export const toHex = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 export const fromHex = (hex: string) => {
   const value = hex.startsWith("0x") ? hex.slice(2) : hex;
-  if (value.length % 2) throw new Error("Invalid hex string from wallet.");
+  if (!/^(?:[0-9a-fA-F]{2})+$/.test(value))
+    throw new Error("Invalid hex string from wallet.");
   const bytes = new Uint8Array(value.length / 2);
   for (let i = 0; i < value.length; i += 2)
     bytes[i / 2] = parseInt(value.slice(i, i + 2), 16);
@@ -149,11 +150,15 @@ export async function createConnectedSession(
   const midnightProvider: MidnightProvider = {
     submitTx: async (tx: any) => {
       const result = await api.submitTransaction(toHex(tx.serialize()));
-      return typeof result === "string"
-        ? result
-        : (result?.transactionId ??
-            result?.id ??
-            toHex(tx.serialize()).slice(0, 64));
+      const id =
+        typeof result === "string"
+          ? result
+          : (result?.transactionId ?? result?.id);
+      if (typeof id !== "string" || !id.length)
+        throw new Error(
+          "Wallet returned no transaction ID. Check wallet activity before retrying.",
+        );
+      return id;
     },
   };
   return {

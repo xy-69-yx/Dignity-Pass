@@ -1,30 +1,39 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Manrope, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const bodyFont = DM_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const displayFont = Manrope({ variable: "--font-display", subsets: ["latin"] });
+const monoFont = IBM_Plex_Mono({
+  variable: "--font-mono",
+  weight: ["400", "500"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
+  icons: { icon: "/icon.svg" },
   title: "Dignity Pass — Private Aid Network",
-  description: "Issue and verify one-time aid coupons with privacy-preserving proofs on Midnight.",
+  description:
+    "Issue and verify one-time aid coupons with privacy-preserving proofs on Midnight.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body>
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

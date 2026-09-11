@@ -31,16 +31,17 @@ Selective disclosure is core product behavior:
 
 Preprod: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`.
 
-Deploy once, reconnect on each session, and send all contract transactions to this address. Dashboard transaction integration remains roadmap work.
+Deploy once, reconnect on each session, and send all contract transactions to this address. Public ledger reads and wallet-backed issue/redeem/admin controls are implemented. Live agency operations are blocked because the deployed sealed agency key is the placeholder `2222…2222`; new random credentials cannot authorize this contract.
 
 ### MVP scope
 
-- Next.js agency dashboard.
+- Multi-page public landing, guide, privacy page, and agency/recipient workspace.
 - 1AM connection on Midnight Preprod.
 - Wallet connection to the existing shared Preprod contract.
 - Compact contract for issue, revoke, pause, resume, close, redeem, and read-only checks.
 - Checked-in proving/verifying assets.
-- CI checks for lint, typecheck, build, and Compact compilation.
+- CI checks for lint, typecheck, generated-contract tests, build, and Compact compilation.
+- Desktop/mobile browser tests and real Preprod public-state reads.
 - Setup, usage, privacy, architecture, contract, and proposal docs.
 
 ### Acceptance criteria
@@ -68,14 +69,15 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 #### Phase 1 — Level 4 MVP
 
 - Reuse the deployed Preprod contract for all circuit calls.
-- Connect issue/redeem UI to generated contract API.
-- Replace sample metrics with indexed state.
+- Resolve the sealed placeholder agency key through an approved deployment decision.
+- Validate wallet-approved live issuance and redemption; UI now calls the generated contract API.
+- Keep all metrics and records sourced from the indexer; sample data removed.
 - Publish hosted app, contract address, CI badge, demo, and X profile.
 
 #### Phase 2 — production hardening
 
 - Encrypted private-state backup and recovery.
-- Contract integration tests and browser end-to-end tests.
+- Expand existing contract and browser tests with a wallet-approved live acceptance run.
 - Agency key rotation and campaign recovery policy.
 - Role separation for agency issuer and shop verifier.
 - Accessibility, localization, mobile wallet UX.
@@ -89,22 +91,22 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 
 ## Alternative ideas evaluated
 
-| Idea | Fit | Decision |
-| --- | --- | --- |
-| Private voting | Strong privacy fit | Not selected; aid access has clearer current scope |
-| Age / eligibility gate | Strong proof fit | Future threshold-eligibility module |
-| Private allowlist access | Strong fit | Coupon commitment pattern can support it |
-| Confidential credentials | Strong fit | Future credential issuer integration |
-| Sealed-bid auction | Strong fit | Different user and economic model |
-| Private payroll / splits | Strong fit | Future disbursement product |
-| Anonymous feedback / survey | Strong fit | Future impact measurement module |
+| Idea                        | Fit                | Decision                                           |
+| --------------------------- | ------------------ | -------------------------------------------------- |
+| Private voting              | Strong privacy fit | Not selected; aid access has clearer current scope |
+| Age / eligibility gate      | Strong proof fit   | Future threshold-eligibility module                |
+| Private allowlist access    | Strong fit         | Coupon commitment pattern can support it           |
+| Confidential credentials    | Strong fit         | Future credential issuer integration               |
+| Sealed-bid auction          | Strong fit         | Different user and economic model                  |
+| Private payroll / splits    | Strong fit         | Future disbursement product                        |
+| Anonymous feedback / survey | Strong fit         | Future impact measurement module                   |
 
 ## Level 4 evidence checklist
 
 - [ ] Public GitHub repository.
 - [ ] Live Midnight Preprod app.
 - [x] Contract address supplied by owner: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480` (verify through the app).
-- [ ] README with setup and usage.
+- [x] README with setup, usage, current limits, architecture, and testing.
 - [ ] CI workflow with passing run.
 - [ ] Product X profile linked in README.
 - [ ] One-minute MVP demo video.

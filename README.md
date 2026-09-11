@@ -1,248 +1,207 @@
 # Dignity Pass
 
-Privacy-preserving aid coupons on Midnight Network. Relief agencies issue one-time passes; recipients redeem them without exposing identity, eligibility details, coupon secrets, or nonce.
+Private, one-time aid coupons on Midnight Preprod. A multi-page Next.js product with public campaign reads, 1AM wallet integration, private pass files, and Compact contract transactions.
 
-Built for **New Moon to Full: Monthly Moonshots on Midnight — Level 4: Waxing Gibbous**.
+## Current deployment status
 
-## Product
-
-Dignity Pass gives aid agencies a private coupon workflow:
-
-1. Agency connects to the shared, already deployed Preprod campaign.
-2. Agency issues a commitment for each coupon.
-3. Recipient keeps coupon secret and nonce in wallet/private state.
-4. Recipient redeems once through a zero-knowledge proof.
-5. Shop or verifier learns only that coupon is valid and unused.
-
-No beneficiary name, address, eligibility record, secret, or nonce enters public ledger state.
-
-## Links
-
-Replace marked placeholders before submission.
-
-| Resource | Link |
-| --- | --- |
-| Live Preprod app | **TODO: add deployed Vercel/host URL** |
-| Contract connection page | [`/deploy`](./app/deploy/page.tsx) — available at `<app-url>/deploy` |
-| Contract address | `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480` |
-| GitHub repository | **TODO: add public repository URL** |
-| Product X profile | **TODO: add product X profile URL** |
-| Demo video | **TODO: add 1-minute MVP demo URL** |
-| CI workflow | [`CI`](./.github/workflows/ci.yml) · [![CI](https://github.com/OWNER/REPOSITORY/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPOSITORY/actions/workflows/ci.yml) — replace `OWNER/REPOSITORY` |
-| Compact contract | [`contracts/dignity_pass.compact`](./contracts/dignity_pass.compact) |
-| Product proposal | [`proposals.md`](./proposals.md) |
-
-## Level 4 submission checklist
-
-| Requirement | Status | Evidence / action |
-| --- | --- | --- |
-| Working MVP live on Preprod | **TODO** | Add live app URL above; connect via `/deploy` |
-| Public GitHub repository | **TODO** | Add repository URL above |
-| Contract address | Provided | Deployment reported by owner; address above |
-| README with setup and usage | Done | This file |
-| Contract/privacy explanation | Done | [Privacy model](#privacy-model), [Contract](#contract) |
-| CI/CD workflow | Done | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) |
-| Passing CI run / badge | **TODO** | Push to public repo, confirm run, update badge owner/repository |
-| Product X profile | **TODO** | Create profile, add URL above, pin launch post |
-| Demo video | **TODO** | Record full MVP flow; add URL above |
-| Minimum 15 meaningful commits | **TODO** | Confirm public Git history; do not squash required history |
-
-## Requirements coverage
-
-Repository covers Level 4 implementation requirements:
-
-- MVP dashboard for campaign overview, issuing passes, and verification demo.
-- Compact contract with private coupon commitment and campaign-scoped nullifier.
-- Browser wallet integration through 1AM.
-- Midnight Preprod network configuration.
-- Browser-side proving assets under [`public/zk/dignity-pass`](./public/zk/dignity-pass).
-- Existing-contract connection with wallet providers and indexer verification.
-- Technical documentation, user-facing usage, contract reference, privacy model, architecture, and proposal.
-- CI workflow for lint, TypeScript, production build, and Compact compilation.
-
-## Requirements and prerequisites
-
-- Node.js 22+
-- npm
-- 1AM browser extension, installed and unlocked
-- Midnight Preprod selected in 1AM
-- Preprod funds sufficient for transactions
-- Compact CLI for local contract compilation; browser app uses checked-in generated assets
-
-Do not commit wallet secrets, agency secrets, coupon secrets, private keys, or `.env` files.
-
-## Local setup
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-Quality checks:
-
-```bash
-npm run lint
-npm run typecheck
-npm run build
-npm run verify
-```
-
-`verify` runs lint, typecheck, and production build. Same checks run in GitHub Actions.
-
-## How to use
-
-### Connect to the existing Preprod contract
-
-Contract deployed once; every session and contract transaction must reuse:
+Shared Preprod address:
 
 ```text
 5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480
 ```
 
-Runtime source of truth: [`lib/config.ts`](./lib/config.ts). The connection helper returns a contract instance whose `callTx` methods target this address. It does not accept an alternate address or deploy another contract.
+Live indexer inspection on 11 September 2026 confirmed an open campaign, a limit of 500, and zero issued coupons. These are observations at inspection time; the app always reads current state.
 
-1. Unlock 1AM and select Midnight `preprod`.
-2. Start the app or open its hosted URL.
-3. Open `/deploy` (retained as the contract connection route).
-4. Select **Connect to existing contract** and approve wallet connection.
-5. Wait for the existing contract to be verified through the indexer.
+**Agency authorization is blocked by deployment configuration.** The sealed agency key is `2222…2222`, a placeholder supplied during the original deployment. Agency operations require a secret whose derived hash matches that exact key. Generating a new random secret does not repair it. The contract has no key rotation circuit. A correctly initialized replacement requires a separate deployment decision; the app does not silently change the shared address.
 
-Connection itself does not submit a transaction. Future circuit calls use wallet-provided proving, balancing, and submission.
+Public reads work. Transaction controls are implemented, but successful live issuance/redemption has not been demonstrated against this deployment. Do not present this as a fully operational aid program or an audited production system.
 
-### Use dashboard
+## Links
 
-- **Overview:** inspect campaign status, issuance, redemption, and partner-shop presentation.
-- **Issue passes:** enter internal reference label. Label is agency UI only; never use name, address, or eligibility detail. Select **Generate private pass**.
-- **Verify redemption:** run verification demo. Production wiring should submit `redeem()` with recipient private witness state and read resulting ledger state.
+| Resource            | Location                                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| GitHub repository   | [xy-69-yx/Dignity-Pass](https://github.com/xy-69-yx/Dignity-Pass)                                                |
+| Hosted app          | Pending: add published URL                                                                                       |
+| Preprod contract    | Address above; runtime source: [lib/config.ts](lib/config.ts)                                                    |
+| CI                  | [Workflow](.github/workflows/ci.yml) · [Runs](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml) |
+| Product X profile   | Pending: add product profile URL                                                                                 |
+| Demo video          | Pending: record and link real functionality                                                                      |
+| Product proposal    | [proposals.md](proposals.md)                                                                                     |
+| Architecture        | [docs/architecture.md](docs/architecture.md)                                                                     |
+| User guide          | Site route `/how-it-works`                                                                                       |
+| Privacy explanation | Site route `/privacy` and section below                                                                          |
+| Compact source      | [contracts/dignity_pass.compact](contracts/dignity_pass.compact)                                                 |
 
-Dashboard includes presentation/demo interactions. Existing-contract connection is wired to Midnight Preprod; production issue and redemption transaction controls remain next integration work.
+## Pages
+
+| Route           | Purpose                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------- |
+| `/`             | Public landing page explaining the product                                                  |
+| `/campaign`     | Live state, counts, contract address, authorization notice                                  |
+| `/issue`        | Validate agency credentials, prepare/download a private pass, issue its commitment          |
+| `/redeem`       | Import a pass locally, check current state, submit redemption                               |
+| `/activity`     | Current issued/revoked commitments, spent nullifiers, session receipts                      |
+| `/settings`     | Read sealed configuration; pause, resume, revoke, close; generate future agency credentials |
+| `/how-it-works` | Agency and recipient instructions                                                           |
+| `/privacy`      | Disclosure boundaries and operational limitations                                           |
+| `/deploy`       | Legacy redirect to `/campaign`; no repeated deployment                                      |
+| `/api/campaign` | Read-only JSON snapshot from the Preprod indexer                                            |
+
+No sample metrics, partner shops, fake charts, simulated verification, or invented transaction IDs are used. The pass illustration on the homepage explains the privacy model; it is not an issued coupon.
+
+## Setup
+
+Use Node.js 22 or newer and npm.
+
+```bash
+npm ci
+npm run dev
+```
+
+Open [localhost:3000](http://localhost:3000). Public reads require network access to Midnight Preprod; no wallet is needed for browsing campaign state.
+
+For transaction submission, install/unlock [1AM](https://1am.xyz), select `preprod`, and fund the wallet with the resources required by its proving/balancing flow. Select **Connect 1AM** in the workspace.
+
+No server wallet or application database is configured. The wallet supplies its proving provider and network configuration. The application uses the [official example's Preprod indexer endpoint](https://github.com/midnightntwrk/example-counter/blob/main/MIGRATION_GUIDE.md), also verified against this deployed contract.
+
+## How to use
+
+### Read the campaign
+
+Open `/campaign`. The app fetches public state on entry, every 30 seconds while visible, and on Refresh. A failed refresh preserves the last successful reading and labels it as stale. It never replaces unavailable data with zero or sample values.
+
+### Issue a pass
+
+This requires the original agency secret matching the deployed agency key.
+
+1. Connect 1AM on Preprod and open `/issue`.
+2. Enter the agency secret locally. The browser checks its hash against the ledger.
+3. Prepare a pass. Secure browser randomness generates a 32-byte secret and nonce.
+4. Download the private JSON file and confirm that you saved it.
+5. Select **Issue on Midnight**, approve the wallet request, and wait for finalization.
+6. After confirmed issuance, share the saved file privately with its recipient.
+
+The file is saved before submission so an interrupted transaction cannot leave an issued pass with unrecoverable credentials. If confirmation is interrupted, inspect wallet activity and ledger state before retrying. Reusing the same commitment cannot issue a duplicate.
+
+### Redeem a pass
+
+1. Open `/redeem` and choose the pass JSON file or paste its contents.
+2. Select **Check pass on Midnight**. Parsing and commitment/nullifier calculation happen locally; the file is not uploaded.
+3. The app checks campaign scope, issuance, revocation, prior redemption, state, and expiry.
+4. Connect 1AM and select **Redeem on Midnight**.
+5. Wait for the finalized transaction ID. A green pre-check does not reserve the pass; the circuit enforces final validity.
+
+Anyone who possesses the file can redeem it. Redemption records coupon use; this contract does not transfer funds or pay shops.
+
+### Campaign controls
+
+Open `/settings`, enter the agency secret, and choose an authorized action. Revocation requires confirmation. Permanent closure requires typing `CLOSE`. Closed campaigns cannot reopen.
+
+Agency key, campaign ID, expiry, and coupon limit are sealed. The credential generator creates correct credentials for a future deployment only; it cannot change this deployment's agency key.
 
 ## Privacy model
 
-### Public or ledger-visible
+**Public:** campaign configuration, agency key hash, commitments, revoked commitments, spent nullifiers, aggregate counts, and transaction/network metadata.
 
-- Campaign ID, agency key hash, expiry, maximum coupon count.
-- Campaign state: `OPEN`, `PAUSED`, or `CLOSED`.
-- Issued coupon commitments.
-- Revoked coupon commitments.
-- Issued count.
-- Campaign-scoped redeemed nullifiers.
-- Transaction and contract metadata exposed by Midnight infrastructure.
+**Private inputs:** agency secret, coupon secret, and nonce. Names, addresses, and eligibility evidence are not collected by this application. Agencies can retain separate off-chain eligibility records.
 
-### Private
+Secrets are passed through browser memory into the wallet proving flow. They are not stored in localStorage or sent to the campaign API. Operation private state is cleared after the call settles. Pass files and generated agency credential files are explicit plaintext downloads and must be stored securely.
 
-- Agency secret used to authenticate agency circuits.
-- Coupon secret and coupon nonce.
-- Beneficiary identity and contact details.
-- Eligibility documents or attributes.
-- Mapping between person and coupon commitment.
-- Raw private state held by wallet.
+The browser, wallet, and its proving provider are trust boundaries. Someone with pass secrets can derive both commitment and nullifier. Timing, wallet activity, and agency records may reveal associations. Do not claim perfect anonymity or unlinkability from all observers.
 
-### Observer knowledge
-
-Observer can see campaign activity, commitment/nullifier values, transaction timing, and aggregate counts. Observer cannot derive beneficiary identity or coupon secret from these values under intended cryptographic assumptions. Operational metadata such as wallet/network timing can still leak information outside contract privacy; avoid personal data in labels, transaction metadata, or public posts.
-
-### Nullifier design
-
-`redeem()` computes nullifier from campaign ID and private coupon secret/nonce. Contract stores nullifier, not secret or nonce. Same coupon cannot redeem twice. Campaign ID domain-separates nullifiers across campaigns, preventing cross-campaign reuse/linking by this construction.
+`redeem()` writes a campaign-scoped nullifier and rejects repeat use. The site displays current ledger sets, not a fabricated chronological history or a guessed commitment-to-nullifier mapping.
 
 ## Architecture
 
 ```text
-User browser
-  ├─ Next.js UI (app/)
-  │    ├─ dashboard presentation
-  │    └─ /deploy wallet flow
-  ├─ 1AM browser extension
-  │    ├─ wallet connection
-  │    ├─ proving provider
-  │    ├─ transaction balancing/signing
-  │    └─ Preprod submission
-  ├─ compiled contract + ZK assets
-  │    ├─ contracts/managed/dignity-pass
-  │    └─ public/zk/dignity-pass
-  └─ Midnight Preprod
-       ├─ ledger state
-       └─ indexer state polling
+Public pages / workspace
+  ├─ GET /api/campaign → Preprod indexer → decode generated ledger → public snapshot
+  └─ 1AM connection
+       ├─ local agency/pass inputs → generated Compact witnesses
+       ├─ callTx on the shared contract
+       ├─ wallet proving + balancing + submission
+       └─ finalized result → receipt + refresh public state
 ```
 
-### Code map
+See [docs/architecture.md](docs/architecture.md) for module responsibilities, data flow, and design decisions.
 
-| Area | Location | Responsibility |
-| --- | --- | --- |
-| Dashboard | [`app/page.tsx`](./app/page.tsx) | Overview, issue, verify UI |
-| Deployment UI | [`app/deploy/page.tsx`](./app/deploy/page.tsx) | Connect 1AM and verify existing contract |
-| Midnight session | [`lib/midnight.ts`](./lib/midnight.ts) | Network, wallet/provider adapters, state polling |
-| Contract integration | [`lib/dignity-pass.ts`](./lib/dignity-pass.ts) | Bind compiled contract and circuit calls to shared address |
-| Compact source | [`contracts/dignity_pass.compact`](./contracts/dignity_pass.compact) | Privacy-critical circuits and ledger |
-| ZK assets | [`public/zk/dignity-pass`](./public/zk/dignity-pass) | Browser prover/verifier assets |
-| CI | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | Lint, typecheck, build, Compact compile |
+## Contract reference
 
-## Contract
+Constructor: `constructor(agencyKeyHash, campaign, expiry, couponLimit)`. Coupon limit must be positive; expiry `0` disables expiration. Campaign starts open.
 
-Preprod address: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`. This deployment is reused for every contract operation.
+| Circuit                    | Authority             | Result                                                            |
+| -------------------------- | --------------------- | ----------------------------------------------------------------- |
+| `issueCoupon(commitment)`  | Agency secret         | Inserts a fresh commitment while open, unexpired, and below limit |
+| `revokeCoupon(commitment)` | Agency secret         | Permanently revokes an issued commitment                          |
+| `pause()`                  | Agency secret         | Stops issuance/redemption                                         |
+| `resume()`                 | Agency secret         | Reopens a paused campaign before expiry                           |
+| `closeCampaign()`          | Agency secret         | Permanently closes the campaign                                   |
+| `redeem()`                 | Coupon secret + nonce | Checks validity and writes an unused nullifier                    |
+| `isIssued(commitment)`     | Public                | Checks issued and not revoked                                     |
+| `isRedeemed(nullifier)`    | Public                | Checks spent nullifier                                            |
+| `campaignExpiry()`         | Public                | Returns expiry                                                    |
+| `totalIssued()`            | Public                | Returns cumulative issued count                                   |
 
-Source: [`contracts/dignity_pass.compact`](./contracts/dignity_pass.compact).
+The UI uses indexer state for read-only checks; it does not spend transaction fees to read a value. All mutation calls use the address in `lib/config.ts`.
 
-### Constructor
-
-`constructor(agencyKeyHash, campaign, expiry, couponLimit)` initializes public campaign configuration and starts campaign in `OPEN` state. `expiry = 0` means no expiry.
-
-### Circuits
-
-| Circuit | Access | Behavior |
-| --- | --- | --- |
-| `issueCoupon(commitment)` | Agency | Adds fresh commitment, increments count |
-| `revokeCoupon(commitment)` | Agency | Marks issued commitment revoked |
-| `pause()` | Agency | Stops issuance and redemption |
-| `resume()` | Agency | Reopens paused campaign before expiry |
-| `closeCampaign()` | Agency | Permanently closes campaign |
-| `redeem()` | Recipient | Proves issued, non-revoked, unused coupon; stores nullifier |
-| `isIssued(commitment)` | Read-only | Checks issued and not revoked |
-| `isRedeemed(nullifier)` | Read-only | Checks nullifier spent |
-| `campaignExpiry()` | Read-only | Returns expiry; zero means none |
-| `totalIssued()` | Read-only | Returns aggregate issued count |
-
-### Agency authentication
-
-Agency authentication compares public `agencyKey` with `agencyPublicKey(agencySecret())`. Only hash public; agency secret stays in witness/private wallet state.
-
-### Build contract locally
-
-Install Compact CLI, then compile with CI version:
+Compile with the pinned CI compiler:
 
 ```bash
 compact update 0.31.1
-mkdir -p /tmp/dignity-pass-compiled
 compact compile +0.31.1 contracts/dignity_pass.compact /tmp/dignity-pass-compiled
 ```
 
-Generated browser assets checked in because frontend loads them at runtime.
+The checked-in generated contract and `public/zk/dignity-pass` assets must remain consistent with the deployed circuit version.
 
-## CI/CD
+## Verification
 
-GitHub Actions workflow: [`.github/workflows/ci.yml`](./.github/workflows/ci.yml).
+```bash
+npm run verify
+npx playwright install chromium
+npm run test:e2e
+```
 
-Every push to `main` and every pull request runs:
+`verify` runs lint, TypeScript, contract/application tests, and the production build. Contract tests execute generated circuits locally; they are not proof of submitted live transactions.
 
-- `npm ci`
-- `npm run lint`
-- `npm run typecheck`
-- `npm run build`
-- Compact compiler installation and contract compilation
+Browser tests run against a production server on port 3100, covering desktop and 375px mobile layouts, public Preprod reads, invalid pass rejection, wallet absence, local downloads, and explicit indexer failures. The failure-path test intercepts only its test browser request. There is no mock-data switch in the product.
 
-Hosting is separate from CI. Configure Vercel or another host to build with `npm run build`, then add hosted URL to [Links](#links). Never put wallet credentials in CI or hosting environment variables.
+Browser artifacts are written to ignored `test-results/`. Live-read tests require access to Midnight's indexer. CI currently runs lint, typecheck, contract tests, production build, and Compact compilation; browser tests are available separately.
 
-## Limitations and next steps
+## Hosting
 
-- Issue and redemption UI currently demonstrates product flows; wire wallet-backed `issueCoupon()` and `redeem()` calls before real aid distribution.
-- Private state import/export methods intentionally not implemented; add encrypted backup before production use.
-- Add contract integration tests and frontend tests before production launch.
-- Replace dashboard sample metrics with indexed contract state.
-- Add rate limits, agency key rotation policy, recovery process, and operational privacy guidance.
+This app needs a Next.js server because `/api/campaign` reads and decodes live ledger state. Do not deploy it as static-only HTML.
+
+```bash
+npm run build
+npm start
+```
+
+Configure a Node-compatible Next.js host with `npm ci` and `npm run build`. Preserve `public/zk` assets and allow outbound HTTPS to the indexer. Use HTTPS for wallet integration and secure browser APIs. No agency secrets or private wallet credentials belong in hosting environment variables.
+
+## Moonshots submission requirements
+
+Based on the supplied Level 3 and Level 4 challenge text:
+
+| Requirement                                     | Evidence / remaining action                                                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Public repository + complete README/setup/usage | Repository link and this documentation; confirm public visibility                          |
+| Meaningful use of Midnight privacy              | Compact witnesses, commitments, and one-time nullifiers                                    |
+| 3+ passing tests (Level 3)                      | `npm test`: generated-circuit and pass-validation tests                                    |
+| Test output screenshot (Level 3)                | Capture final test output for submission                                                   |
+| CI workflow + passing runs                      | Workflow exists; check hosted Actions after pushing                                        |
+| Approved proposal from provided idea list       | [proposals.md](proposals.md); approval must be recorded by program                         |
+| README privacy model                            | Included above                                                                             |
+| Live demo + demo video                          | Publish host and record real workflow; Level 3 asks for a one-minute video                 |
+| Working Preprod MVP + address (Level 4)         | Address verified; resolve placeholder agency key before claiming complete operational flow |
+| Product X profile in README (Level 4)           | Still required                                                                             |
+| 10 / 15 meaningful commits (Level 3 / 4)        | 21 local commits at inspection; reviewers must assess meaningfulness and public history    |
+
+Level 4 expects Level 3 completion and an approved idea. This README records requirements, not program approval or prize eligibility.
+
+## Remaining production work
+
+Resolve deployment authorization, complete a wallet-approved live issue/redeem acceptance run, publish hosting and demo evidence, add encrypted credential recovery, and obtain an independent security review. There is no real-funds disbursement, partner registry, or beneficiary identity database.
 
 ## License
 
-No license declared yet. Add `LICENSE` before accepting external contributions.
+No license declared. Add a license before inviting external reuse.

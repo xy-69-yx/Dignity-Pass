@@ -3,12 +3,17 @@
 
 import { CompiledContract } from "@midnight-ntwrk/compact-js";
 import { findDeployedContract } from "@midnight-ntwrk/midnight-js-contracts";
-import { Contract, type Witnesses } from "@/contracts/managed/dignity-pass/contract/index";
+import {
+  Contract,
+  type Witnesses,
+} from "@/contracts/managed/dignity-pass/contract/index";
 import type { ConnectedSession } from "./midnight";
-import { DIGNITY_PASS_CONTRACT_ADDRESS } from "./config";
+import { DIGNITY_PASS_CONTRACT_ADDRESS, PRIVATE_STATE_ID } from "./config";
+import { agencyHash, bytes32, couponValues, type Coupon } from "./coupon";
+import { ledger } from "@/contracts/managed/dignity-pass/contract/index";
 
 const ZK_ASSET_PATH = "/zk/dignity-pass/";
-type DignityPassPrivateState = {
+export type DignityPassPrivateState = {
   agencySecret?: Uint8Array;
   couponSecret?: Uint8Array;
   couponNonce?: Uint8Array;
@@ -28,7 +33,7 @@ function privateWitness(
 
 // The generated constructor validates all witness functions even though
 // deployment itself does not consume secrets. Circuit calls need private state.
-const witnesses: Witnesses<DignityPassPrivateState> = {
+export const witnesses: Witnesses<DignityPassPrivateState> = {
   agencySecret: privateWitness("agencySecret"),
   couponSecret: privateWitness("couponSecret"),
   couponNonce: privateWitness("couponNonce"),
@@ -42,7 +47,7 @@ const makeCompiledContract = () =>
 export async function connectDignityPass(session: ConnectedSession) {
   const provider = session.providers.privateStateProvider;
   provider.setContractAddress(DIGNITY_PASS_CONTRACT_ADDRESS);
-  const privateStateId = "dignityPassPrivateState";
+  const privateStateId = PRIVATE_STATE_ID;
   if ((await provider.get(privateStateId)) === null) {
     await provider.set(privateStateId, {});
   }
@@ -51,4 +56,91 @@ export async function connectDignityPass(session: ConnectedSession) {
     contractAddress: DIGNITY_PASS_CONTRACT_ADDRESS,
     privateStateId,
   });
+}
+
+export type CampaignAction =
+  | "issueCoupon"
+  | "redeem"
+  | "revokeCoupon"
+  | "pause"
+  | "resume"
+  | "closeCampaign";
+export type ActionInput = {
+  action: CampaignAction;
+  agencySecret?: string;
+  commitment?: string;
+  coupon?: Coupon;
+};
+
+export async function transact(session: ConnectedSession, input: ActionInput) {
+  const contractState =
+    await session.providers.publicDataProvider.queryContractState(
+      DIGNITY_PASS_CONTRACT_ADDRESS,
+    );
+  if (!contractState)
+    throw new Error("Contract not found on Midnight Preprod.");
+  const current = ledger(contractState.data);
+  const privateState: DignityPassPrivateState = {};
+  if (input.action !== "redeem") {
+    privateState.agencySecret = bytes32(input.agencySecret ?? "");
+    const expected = Array.from(current.agencyKey, (b) =>
+      b.toString(16).padStart(2, "0"),
+    ).join("");
+    if (agencyHash(privateState.agencySecret) !== expected)
+      throw new Error(
+        "Agency secret does not match this contract. No transaction was submitted.",
+      );
+  } else {
+    if (
+      !input.coupon ||
+      input.coupon.contractAddress !== DIGNITY_PASS_CONTRACT_ADDRESS ||
+      input.coupon.network !== "preprod"
+    )
+      throw new Error("Pass does not belong to this contract.");
+    const campaignId = Array.from(current.campaignId, (b) =>
+      b.toString(16).padStart(2, "0"),
+    ).join("");
+    if (input.coupon.campaignId !== campaignId)
+      throw new Error("Pass belongs to a different campaign.");
+    privateState.couponSecret = bytes32(input.coupon.secret);
+    privateState.couponNonce = bytes32(input.coupon.nonce);
+    const values = couponValues(
+      privateState.couponSecret,
+      privateState.couponNonce,
+      campaignId,
+    );
+    if (!current.issuedCoupons.member(bytes32(values.commitment)))
+      throw new Error("Pass has not been issued on this contract.");
+    if (current.revokedCoupons.member(bytes32(values.commitment)))
+      throw new Error("Pass has been revoked.");
+    if (current.redeemedNullifiers.member(bytes32(values.nullifier)))
+      throw new Error("Pass has already been redeemed.");
+  }
+  const provider = session.providers.privateStateProvider;
+  provider.setContractAddress(DIGNITY_PASS_CONTRACT_ADDRESS);
+  await provider.set(PRIVATE_STATE_ID, privateState);
+  try {
+    const contract = await connectDignityPass(session);
+    switch (input.action) {
+      case "issueCoupon":
+        return await contract.callTx.issueCoupon(
+          bytes32(input.commitment ?? ""),
+        );
+      case "revokeCoupon":
+        return await contract.callTx.revokeCoupon(
+          bytes32(input.commitment ?? ""),
+        );
+      case "redeem":
+        return await contract.callTx.redeem();
+      case "pause":
+        return await contract.callTx.pause();
+      case "resume":
+        return await contract.callTx.resume();
+      case "closeCampaign":
+        return await contract.callTx.closeCampaign();
+    }
+  } finally {
+    await provider.set(PRIVATE_STATE_ID, {});
+    Object.values(privateState).forEach((value) => value.fill(0));
+  }
 }

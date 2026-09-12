@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CompiledContract } from "@midnight-ntwrk/compact-js";
-import { findDeployedContract } from "@midnight-ntwrk/midnight-js-contracts";
+import { createUnprovenDeployTx, findDeployedContract, submitTxAsync } from "@midnight-ntwrk/midnight-js-contracts";
 import {
   Contract,
   type Witnesses,
@@ -43,6 +43,33 @@ const makeCompiledContract = () =>
     CompiledContract.withWitnesses(witnesses),
     CompiledContract.withCompiledFileAssets(ZK_ASSET_PATH),
   );
+
+export async function deployFreshDignityPass(
+  session: ConnectedSession,
+  agencyKeyHash: string,
+  campaignId: string,
+  agencySecret: string,
+  expiresAt = 0n,
+  maxCoupons = 500n,
+) {
+  const initialPrivateState: DignityPassPrivateState = { agencySecret: bytes32(agencySecret) };
+  const deployment = await (createUnprovenDeployTx as any)(
+    { zkConfigProvider: session.providers.zkConfigProvider, walletProvider: session.providers.walletProvider },
+    {
+      compiledContract: makeCompiledContract(),
+      args: [bytes32(agencyKeyHash), bytes32(campaignId), expiresAt, maxCoupons],
+      privateStateId: PRIVATE_STATE_ID,
+      initialPrivateState,
+      signingKey: (await import("@midnight-ntwrk/compact-runtime")).sampleSigningKey(),
+    },
+  );
+  const contractAddress = deployment.public.contractAddress;
+  await submitTxAsync(session.providers as any, { unprovenTx: deployment.private.unprovenTx });
+  await session.providers.privateStateProvider.setContractAddress(contractAddress);
+  await session.providers.privateStateProvider.set(PRIVATE_STATE_ID, deployment.private.initialPrivateState);
+  await session.providers.privateStateProvider.setSigningKey(contractAddress, deployment.private.signingKey);
+  return contractAddress;
+}
 
 export async function connectDignityPass(session: ConnectedSession) {
   const provider = session.providers.privateStateProvider;

@@ -7,14 +7,14 @@ Private, one-time aid coupons on Midnight Preprod. A multi-page Next.js product 
 Shared Preprod address:
 
 ```text
-5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480
+ce4a192d8ffdbb879bff1da9280e678ad0a7306b6099ebee619f1392ba051deb
 ```
 
 Live indexer inspection on 11 September 2026 confirmed an open campaign, a limit of 500, and zero issued coupons. These are observations at inspection time; the app always reads current state.
 
-**Agency authorization is blocked by deployment configuration.** The sealed agency key is `2222…2222`, a placeholder supplied during the original deployment. Agency operations require a secret whose derived hash matches that exact key. Generating a new random secret does not repair it. The contract has no key rotation circuit. A correctly initialized replacement requires a separate deployment decision; the app does not silently change the shared address.
+**Fresh deployment verified on Midnight Preprod.** The sealed agency key matches the generated private deployment credentials. Agency operations require the matching secret from the ignored local credentials file. The app now targets this fresh deployment; the previous placeholder deployment is no longer used.
 
-Public reads work. Transaction controls are implemented, but successful live issuance/redemption has not been demonstrated against this deployment. Do not present this as a fully operational aid program or an audited production system.
+Public reads work. Transaction controls target this deployment; complete wallet-approved issuance/redemption acceptance testing remains required before production readiness.
 
 ## Links
 
@@ -44,7 +44,7 @@ Public reads work. Transaction controls are implemented, but successful live iss
 | `/settings`     | Read sealed configuration; pause, resume, revoke, close; generate future agency credentials |
 | `/how-it-works` | Agency and recipient instructions                                                           |
 | `/privacy`      | Disclosure boundaries and operational limitations                                           |
-| `/deploy`       | Legacy redirect to `/campaign`; no repeated deployment                                      |
+| `/deploy`       | Fresh correctly initialized Preprod deployment flow                                        |
 | `/api/campaign` | Read-only JSON snapshot from the Preprod indexer                                            |
 
 No sample metrics, partner shops, fake charts, simulated verification, or invented transaction IDs are used. The pass illustration on the homepage explains the privacy model; it is not an issued coupon.
@@ -58,7 +58,7 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Public reads require network access to Midnight Preprod; no wallet is needed for browsing campaign state.
+Open [localhost:3000](http://localhost:3000). Public reads require network access to Midnight Preprod; no wallet is needed for browsing campaign state. Use `/deploy` for the fresh replacement deployment.
 
 For transaction submission, install/unlock [1AM](https://1am.xyz), select `preprod`, and fund the wallet with the resources required by its proving/balancing flow. Select **Connect 1AM** in the workspace.
 
@@ -115,15 +115,98 @@ The browser, wallet, and its proving provider are trust boundaries. Someone with
 
 ```text
 Public pages / workspace
-  ├─ GET /api/campaign → Preprod indexer → decode generated ledger → public snapshot
-  └─ 1AM connection
-       ├─ local agency/pass inputs → generated Compact witnesses
-       ├─ callTx on the shared contract
-       ├─ wallet proving + balancing + submission
-       └─ finalized result → receipt + refresh public state
+  ├─ / → product landing page
+  ├─ /campaign → live campaign state
+  ├─ /issue → agency pass preparation + issuance
+  ├─ /redeem → local pass validation + redemption
+  ├─ /activity → public commitments, revocations, nullifiers
+  ├─ /settings → agency controls
+  ├─ /how-it-works → user guide
+  └─ /privacy → privacy and trust boundaries
+
+Read path
+  Browser → GET /api/campaign
+           → Midnight Preprod indexer
+           → decode ContractState with generated ledger accessor
+           → public snapshot: state, counts, commitments, revocations, nullifiers
+
+Transaction path
+  Browser local input
+    → 1AM wallet connection on preprod
+    → contract-scoped private state
+    → generated Compact witnesses
+    → callTx on shared contract address
+    → 1AM proving + balancing + signing
+    → Midnight submission
+    → finalized tx ID + block height
+    → clear private state + refresh public snapshot
+
+Trust boundaries
+  Agency secret / coupon secret / nonce
+    stay in browser memory and wallet proving flow
+  Next.js API
+    accepts public reads only; never accepts private credentials
+  Midnight ledger
+    stores public campaign configuration, commitments, revocations,
+    issued count, and campaign-scoped redemption nullifiers
 ```
 
-See [docs/architecture.md](docs/architecture.md) for module responsibilities, data flow, and design decisions.
+### Module map
+
+| Module | Responsibility |
+| --- | --- |
+| `app/page.tsx` | Public landing page and product explanation |
+| `app/(workspace)/layout.tsx` | Shared workspace provider and navigation |
+| `components/workspace-provider.tsx` | Indexer refresh, wallet connection, operation lock, finalized receipts |
+| `app/api/campaign/route.ts` | Fixed-address indexer query and generated-ledger decoding |
+| `lib/config.ts` | Shared contract address, Preprod indexer, private-state ID |
+| `lib/midnight.ts` | 1AM proving, balancing, signing, and submission adapters |
+| `lib/dignity-pass.ts` | Witnesses, deployment, existing-contract connection, circuit dispatch |
+| `lib/coupon.ts` | Compact hash/commit derivation and private pass validation |
+| `lib/campaign.ts` | Public campaign snapshot and state/expiry checks |
+| `contracts/dignity_pass.compact` | Privacy-critical contract source |
+| `contracts/managed/dignity-pass` | Generated Compact contract implementation |
+| `public/zk/dignity-pass` | Browser proving and verification assets |
+
+### Public reads
+
+Server queries only configured contract address, rejects malformed or failed indexer responses, decodes state with generated ledger accessor, and returns decimal `Uint64` values plus hex commitments/nullifiers. API never accepts private credentials. Responses are uncached with 15-second upstream timeout.
+
+Workspace reads on entry, every 30 seconds while visible, and on demand. Failed refresh preserves last successful snapshot and labels it stale. Initial failure shows unavailable state without zero or sample values. Ledger sets are shown as sets; app does not invent chronological history or commitment-to-nullifier mappings.
+
+### Transaction lifecycle
+
+1. Connect 1AM on Preprod and verify shared contract.
+2. Re-read contract state through wallet public provider.
+3. Validate agency hash, coupon scope, issuance, revocation, expiry, and replay status locally.
+4. Store only required witness bytes in contract-scoped in-memory private state.
+5. Invoke generated `callTx` circuit.
+6. Wait for `SucceedEntirely`; capture actual transaction ID and block height.
+7. Clear private state and refresh public ledger snapshot.
+
+One operation lock prevents witness-state races. Wallet connection does not imply agency authority. SDK errors never produce optimistic success or synthetic transaction IDs. Refresh failure after finalization does not turn confirmed transaction into failed transaction.
+
+### Pass lifecycle
+
+Agency browser generates secret and nonce using `crypto.getRandomValues`. `lib/coupon.ts` uses same Compact runtime descriptors as generated contract. Agency saves private JSON pass before issuance. Recipient imports pass locally; app checks network, address, campaign, commitment, revocation, nullifier, state, and expiry. Redemption writes nullifier and blocks reuse.
+
+Pass and agency credential files are plaintext bearer-secret exports. No automatic server backup, localStorage persistence, or recovery service exists. Anyone holding pass file can redeem it. Session receipts disappear on reload; public ledger records remain queryable.
+
+### Deployment key
+
+Fresh Preprod deployment uses agency hash matching ignored local credentials package. Agency circuits require matching secret. Key cannot change through exposed circuits. Protect local secret and keep encrypted recovery on production roadmap.
+
+### Visual system
+
+Landing signature uses physical aid-pass perforation: public entitlement separated from private identity. Operational pages use quieter data-focused layout.
+
+- Paper `#f7fafb`, ink `#152f40`, glacier `#e3f0f4`, cobalt `#244fc9`, mint `#cee9df`, white `#ffffff`.
+- Manrope headings, DM Sans body/UI, IBM Plex Mono public hashes.
+- Separate landing, campaign, issue, redeem, records, controls, guide, and privacy routes.
+- Visible labels, keyboard focus, semantic controls, mobile navigation, explicit empty/error/pending states, reduced-motion support.
+- No invented partner logos, testimonials, impact metrics, or placeholder charts.
+
+Extended version: [docs/architecture.md](docs/architecture.md).
 
 ## Contract reference
 
@@ -192,7 +275,7 @@ Based on the supplied Level 3 and Level 4 challenge text:
 | Approved proposal from provided idea list       | [proposals.md](proposals.md); approval must be recorded by program                         |
 | README privacy model                            | Included above                                                                             |
 | Live demo + demo video                          | Publish host and record real workflow; Level 3 asks for a one-minute video                 |
-| Working Preprod MVP + address (Level 4)         | Address verified; resolve placeholder agency key before claiming complete operational flow |
+| Working Preprod MVP + address (Level 4)         | Fresh address verified; complete wallet-approved issue/redeem acceptance run            |
 | Product X profile in README (Level 4)           | Still required                                                                             |
 | 10 / 15 meaningful commits (Level 3 / 4)        | 21 local commits at inspection; reviewers must assess meaningfulness and public history    |
 
@@ -200,7 +283,7 @@ Level 4 expects Level 3 completion and an approved idea. This README records req
 
 ## Remaining production work
 
-Resolve deployment authorization, complete a wallet-approved live issue/redeem acceptance run, publish hosting and demo evidence, add encrypted credential recovery, and obtain an independent security review. There is no real-funds disbursement, partner registry, or beneficiary identity database.
+Complete a wallet-approved live issue/redeem acceptance run, publish hosting and demo evidence, add encrypted credential recovery, and obtain an independent security review. There is no real-funds disbursement, partner registry, or beneficiary identity database.
 
 ## License
 

@@ -42,9 +42,9 @@ The agency's browser uses `crypto.getRandomValues` for secret and nonce. Hash/co
 
 Plaintext pass and agency downloads are deliberate bearer-secret exports. No automatic secret persistence, server backup, or identity recovery is implemented. Session receipts disappear on reload; public ledger records remain queryable.
 
-## Deployed key limitation
+## Deployment key
 
-The existing sealed agency key is `2222…2222`, not a hash derived from a retained agency secret. Its original campaign ID is also a placeholder. Public state is readable, but agency circuits require a matching secret. The key cannot be changed by any exposed circuit. Generating a new key pair is preparation for a future deployment, not a repair of this one.
+The fresh Preprod deployment uses the agency hash in the ignored local credentials package. Agency circuits require its matching secret. The key cannot be changed by any exposed circuit, so protect the local secret and keep encrypted recovery on the production roadmap.
 
 ## Visual system
 

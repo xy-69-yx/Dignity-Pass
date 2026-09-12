@@ -29,9 +29,9 @@ Selective disclosure is core product behavior:
 
 ### Shared deployment
 
-Preprod: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`.
+Preprod: `ce4a192d8ffdbb879bff1da9280e678ad0a7306b6099ebee619f1392ba051deb`.
 
-Deploy once, reconnect on each session, and send all contract transactions to this address. Public ledger reads and wallet-backed issue/redeem/admin controls are implemented. Live agency operations are blocked because the deployed sealed agency key is the placeholder `2222…2222`; new random credentials cannot authorize this contract.
+Deploy once, reconnect on each session, and send all contract transactions to this address. Fresh deployment verified on Preprod with matching agency hash, campaign ID, open state, no expiry, and a 500-pass limit. Wallet-approved live issue/redeem acceptance testing remains.
 
 ### MVP scope
 
@@ -69,7 +69,7 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 #### Phase 1 — Level 4 MVP
 
 - Reuse the deployed Preprod contract for all circuit calls.
-- Resolve the sealed placeholder agency key through an approved deployment decision.
+- Complete wallet-approved live issuance and redemption acceptance run on fresh deployment.
 - Validate wallet-approved live issuance and redemption; UI now calls the generated contract API.
 - Keep all metrics and records sourced from the indexer; sample data removed.
 - Publish hosted app, contract address, CI badge, demo, and X profile.
@@ -105,7 +105,7 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 
 - [ ] Public GitHub repository.
 - [ ] Live Midnight Preprod app.
-- [x] Contract address supplied by owner: `5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480` (verify through the app).
+- [x] Contract address supplied by owner: `ce4a192d8ffdbb879bff1da9280e678ad0a7306b6099ebee619f1392ba051deb` (verify through the app).
 - [x] README with setup, usage, current limits, architecture, and testing.
 - [ ] CI workflow with passing run.
 - [ ] Product X profile linked in README.

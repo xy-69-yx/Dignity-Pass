@@ -119,15 +119,15 @@ export default function Guide() {
             <section id="limits">
               <h2>Understand the current deployment.</h2>
               <p>
-                The shared contract was initialized with a placeholder agency
-                key. Unless an operator has its matching secret, issuance and
-                agency controls cannot be authorized. The key is sealed and this
-                contract has no rotation circuit.
+                The fresh shared contract uses a sealed agency key derived from
+                the private deployment credentials. Issuance and agency
+                controls require that matching secret. The key is sealed and
+                this contract has no rotation circuit.
               </p>
               <p>
-                Generating new credentials does not change that existing key. A
-                usable replacement would require a separately approved
-                deployment with a correctly derived agency hash.
+                Generating new credentials does not change this existing key.
+                Keep the original credentials secure and use the verified
+                contract address shown in the workspace.
               </p>
               <p>
                 Private state is held in memory for each operation, not backed

@@ -4,11 +4,11 @@
 
 ## Shared Preprod deployment
 
-`5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480`
+`ce4a192d8ffdbb879bff1da9280e678ad0a7306b6099ebee619f1392ba051deb`
 
 Already deployed. Use `connectDignityPass()` in `lib/dignity-pass.ts` to connect; all returned `callTx` operations target this address. Runtime configuration lives in `lib/config.ts`. Do not redeploy during normal use.
 
-Live inspection found the sealed agency key is the placeholder `2222…2222`. Agency circuits require a matching secret and cannot be unlocked by generating an unrelated new one. There is no key-rotation circuit. Public reads work; successful agency transactions require resolving this deployment configuration.
+Fresh deployment is configured with the matching agency hash in the ignored local credentials package. Use that private agency secret for agency circuits. There is no key-rotation circuit; protect the secret and private pass files.
 
 ## Privacy model
 

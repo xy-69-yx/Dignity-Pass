@@ -48,7 +48,7 @@ test("campaign reads real public state and exposes authorization limitation", as
     page.getByText("Confirmed commitments", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".contract-address code")).toHaveText(
-    "5570671a6de0afd29a9252b15ade1645000e220d12fb9c74dfa0c46f9a3d7480",
+    "ce4a192d8ffdbb879bff1da9280e678ad0a7306b6099ebee619f1392ba051deb",
   );
   expect(
     await page.evaluate(

@@ -103,12 +103,12 @@ Out of scope for MVP: wallet compromise, endpoint compromise, traffic analysis, 
 
 ## Level 4 evidence checklist
 
-- [ ] Public GitHub repository.
-- [ ] Live Midnight Preprod app.
+- [x] Public GitHub repository: [xy-69-yx/Dignity-Pass](https://github.com/xy-69-yx/Dignity-Pass).
+- [x] Live Midnight Preprod app: [dignitypass.vercel.app](https://dignitypass.vercel.app/).
 - [x] Contract address supplied by owner: `ce4a192d8ffdbb879bff1da9280e678ad0a7306b6099ebee619f1392ba051deb` (verify through the app).
 - [x] README with setup, usage, current limits, architecture, and testing.
-- [ ] CI workflow with passing run.
-- [ ] Product X profile linked in README.
-- [ ] One-minute MVP demo video.
-- [ ] Minimum 15 meaningful commits.
-- [ ] Proposal submitted for review.
+- [x] CI workflow with passing run.
+- [x] Product X profile linked in README: [@DignityPass](https://x.com/DignityPass).
+- [x] MVP demo video: [Google Drive video](https://drive.google.com/file/d/1MbNh6knmIDXKL0kSnMeZiYI7ztzzsWBz/view?usp=sharing).
+- [x] Minimum 15 meaningful commits: 24 commits present in repository history.
+- [x] Product proposal prepared and linked for review.

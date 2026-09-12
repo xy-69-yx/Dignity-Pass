@@ -16,7 +16,7 @@ Live indexer inspection on 11 September 2026 confirmed an open campaign, a limit
 
 **Fresh deployment verified on Midnight Preprod.** The sealed agency key matches the generated private deployment credentials. Agency operations require the matching secret from the ignored local credentials file. The app now targets this fresh deployment; the previous placeholder deployment is no longer used.
 
-Public reads work. Transaction controls target this deployment; complete wallet-approved issuance/redemption acceptance testing remains required before production readiness.
+Public reads work. Transaction controls target this deployment. Wallet-approved live issue/redeem acceptance remains final production-readiness evidence.
 
 ## Links
 
@@ -26,7 +26,7 @@ Public reads work. Transaction controls target this deployment; complete wallet-
 | Hosted app          | [dignitypass.vercel.app](https://dignitypass.vercel.app/)                                                        |
 | Preprod contract    | Address above; runtime source: [lib/config.ts](lib/config.ts)                                                    |
 | CI                  | [![CI](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml/badge.svg)](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml) · [Workflow](.github/workflows/ci.yml) |
-| Product X profile   | Pending: add product profile URL                                                                                 |
+| Product X profile   | [@DignityPass](https://x.com/DignityPass)                                                                        |
 | Demo video          | [Watch the MVP demo](https://drive.google.com/file/d/1MbNh6knmIDXKL0kSnMeZiYI7ztzzsWBz/view?usp=sharing)       |
 | Product proposal    | [proposals.md](proposals.md)                                                                                     |
 | Architecture        | [docs/architecture.md](docs/architecture.md)                                                                     |
@@ -269,17 +269,17 @@ Based on the supplied Level 3 and Level 4 challenge text:
 
 | Requirement                                     | Evidence / remaining action                                                                |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Public repository + complete README/setup/usage | Repository link and this documentation; confirm public visibility                          |
+| Public repository + complete README/setup/usage | [Repository](https://github.com/xy-69-yx/Dignity-Pass) and this documentation                  |
 | Meaningful use of Midnight privacy              | Compact witnesses, commitments, and one-time nullifiers                                    |
 | 3+ passing tests (Level 3)                      | `npm test`: generated-circuit and pass-validation tests                                    |
-| Test output screenshot (Level 3)                | Capture final test output for submission                                                   |
-| CI workflow + passing runs                      | Workflow exists; check hosted Actions after pushing                                        |
-| Approved proposal from provided idea list       | [proposals.md](proposals.md); approval must be recorded by program                         |
+| Test output screenshot (Level 3)                | [13 passing contract tests](docs/test-output.png)                                            |
+| CI workflow + passing runs                      | [Latest GitHub Actions runs](https://github.com/xy-69-yx/Dignity-Pass/actions) passed         |
+| Approved proposal from provided idea list       | [proposals.md](proposals.md) prepared and linked for program review                         |
 | README privacy model                            | Included above                                                                             |
 | Live demo + demo video                          | [Hosted MVP](https://dignitypass.vercel.app/) · [Demo video](https://drive.google.com/file/d/1MbNh6knmIDXKL0kSnMeZiYI7ztzzsWBz/view?usp=sharing) |
 | Working Preprod MVP + address (Level 4)         | Fresh address verified; complete wallet-approved issue/redeem acceptance run            |
-| Product X profile in README (Level 4)           | Still required                                                                             |
-| 10 / 15 meaningful commits (Level 3 / 4)        | 21 local commits at inspection; reviewers must assess meaningfulness and public history    |
+| Product X profile in README (Level 4)           | [@DignityPass](https://x.com/DignityPass)                                                                        |
+| 10 / 15 meaningful commits (Level 3 / 4)        | 24 commits present in repository history                                                     |
 
 Level 4 expects Level 3 completion and an approved idea. This README records requirements, not program approval or prize eligibility.
 

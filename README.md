@@ -1,5 +1,7 @@
 # Dignity Pass
 
+[![CI](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml/badge.svg)](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml)
+
 Private, one-time aid coupons on Midnight Preprod. A multi-page Next.js product with public campaign reads, 1AM wallet integration, private pass files, and Compact contract transactions.
 
 ## Current deployment status
@@ -21,11 +23,11 @@ Public reads work. Transaction controls target this deployment; complete wallet-
 | Resource            | Location                                                                                                         |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | GitHub repository   | [xy-69-yx/Dignity-Pass](https://github.com/xy-69-yx/Dignity-Pass)                                                |
-| Hosted app          | Pending: add published URL                                                                                       |
+| Hosted app          | [dignitypass.vercel.app](https://dignitypass.vercel.app/)                                                        |
 | Preprod contract    | Address above; runtime source: [lib/config.ts](lib/config.ts)                                                    |
-| CI                  | [Workflow](.github/workflows/ci.yml) · [Runs](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml) |
+| CI                  | [![CI](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml/badge.svg)](https://github.com/xy-69-yx/Dignity-Pass/actions/workflows/ci.yml) · [Workflow](.github/workflows/ci.yml) |
 | Product X profile   | Pending: add product profile URL                                                                                 |
-| Demo video          | Pending: record and link real functionality                                                                      |
+| Demo video          | [Watch the MVP demo](https://drive.google.com/file/d/1MbNh6knmIDXKL0kSnMeZiYI7ztzzsWBz/view?usp=sharing)       |
 | Product proposal    | [proposals.md](proposals.md)                                                                                     |
 | Architecture        | [docs/architecture.md](docs/architecture.md)                                                                     |
 | User guide          | Site route `/how-it-works`                                                                                       |
@@ -274,7 +276,7 @@ Based on the supplied Level 3 and Level 4 challenge text:
 | CI workflow + passing runs                      | Workflow exists; check hosted Actions after pushing                                        |
 | Approved proposal from provided idea list       | [proposals.md](proposals.md); approval must be recorded by program                         |
 | README privacy model                            | Included above                                                                             |
-| Live demo + demo video                          | Publish host and record real workflow; Level 3 asks for a one-minute video                 |
+| Live demo + demo video                          | [Hosted MVP](https://dignitypass.vercel.app/) · [Demo video](https://drive.google.com/file/d/1MbNh6knmIDXKL0kSnMeZiYI7ztzzsWBz/view?usp=sharing) |
 | Working Preprod MVP + address (Level 4)         | Fresh address verified; complete wallet-approved issue/redeem acceptance run            |
 | Product X profile in README (Level 4)           | Still required                                                                             |
 | 10 / 15 meaningful commits (Level 3 / 4)        | 21 local commits at inspection; reviewers must assess meaningfulness and public history    |
